@@ -24,6 +24,7 @@ public class Constants {
 
     // Chats
     public static final String URL_CREATE_CHAT = ROOT_URL + "create_chat.php";
+    public static final String URL_GET_CHATS = ROOT_URL + "get_chats_by_user.php";
 
     // Recommendations
     public static final String URL_GET_WHO_LIKES_ME = ROOT_URL + "get_likes_users.php";

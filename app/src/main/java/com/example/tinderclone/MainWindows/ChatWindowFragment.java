@@ -11,12 +11,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.android.volley.VolleyError;
 import com.example.tinderclone.Chat.ChatItem;
 import com.example.tinderclone.Chat.ChatItemAdapter;
+import com.example.tinderclone.DB.DBHandler;
+import com.example.tinderclone.Helpers.ModelsFiller;
 import com.example.tinderclone.InnerWindows.ChatActivity;
 import com.example.tinderclone.R;
 import com.example.tinderclone.Users.User;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.List;
 
 public class ChatWindowFragment extends Fragment {
 
@@ -45,38 +55,57 @@ public class ChatWindowFragment extends Fragment {
         chatItemArrayList = new ArrayList<>();
         userRecyclerView = getActivity().findViewById(R.id.chatListRecyclerView);
 
-        if (!isChatListEmpty()) {
-            starterChatText.setVisibility(View.INVISIBLE);
-            messagesIntro.setVisibility(View.INVISIBLE);
-            userRecyclerView.setVisibility(View.VISIBLE);
-            buildRecyclerView();
-            attachItems();
-        } else {
-            starterChatText.setVisibility(View.VISIBLE);
-            messagesIntro.setVisibility(View.VISIBLE);
-            userRecyclerView.setVisibility(View.INVISIBLE);
-        }
+        buildRecyclerView();
+        attachItems();
     }
 
     //получение чата из бд
     private void attachItems() {
-        ChatItem item1 = new ChatItem(0, "Марічка", null);
-        ChatItem item2 = new ChatItem(1, "Аня", null);
-        ChatItem item3 = new ChatItem(2, "Катя", null);
-        ChatItem item4 = new ChatItem(3, "Настя", null);
-        ChatItem item5 = new ChatItem(4, "Самка 228", null);
-        ChatItem item6 = new ChatItem(5, "Алина", null);
-        ChatItem item7 = new ChatItem(6, "Алина", null);
-        ChatItem item8 = new ChatItem(7, "Овца", null);
-        chatItemArrayList.add(item1);
-        chatItemArrayList.add(item2);
-        chatItemArrayList.add(item3);
-        chatItemArrayList.add(item4);
-        chatItemArrayList.add(item5);
-        chatItemArrayList.add(item6);
-        chatItemArrayList.add(item7);
-        chatItemArrayList.add(item8);
-        chatItemAdapter.notifyDataSetChanged();
+        DBHandler.getChats(ChatWindowFragment.this.getContext(), mainUser.getId(), new DBHandler.VolleyCallback() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    JSONArray jsonArray = new JSONObject(result).getJSONArray("result");
+                    if (result.equals("{\"result\":[]}")) {
+                        starterChatText.setVisibility(View.VISIBLE);
+                        messagesIntro.setVisibility(View.VISIBLE);
+                        userRecyclerView.setVisibility(View.INVISIBLE);
+                    }
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        ChatItem item = ModelsFiller.chatItemFillerId(jsonArray.getJSONObject(i));
+                        long receiver;
+                        if (item.getFirstUserId() == mainUser.getId())
+                            receiver = item.getSecondUserId();
+                        else
+                            receiver = item.getFirstUserId();
+
+                        DBHandler.getUserById(ChatWindowFragment.this.getContext(), receiver, new DBHandler.VolleyCallback() {
+                            @Override
+                            public void onSuccess(String result) {
+                                try {
+                                    JSONObject obj = new JSONObject(result);
+                                    User localUser = ModelsFiller.fillUser(obj);
+                                    ChatItem chatItem = ModelsFiller.chatItemFillerOtherFields(item, localUser, obj);
+                                    chatItemArrayList.add(chatItem);
+                                    chatItemAdapter.notifyDataSetChanged();
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+                            @Override
+                            public void onError(VolleyError error) { }
+                        });
+
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onError(VolleyError error) { }
+        });
     }
 
     private void buildRecyclerView() {
@@ -95,10 +124,5 @@ public class ChatWindowFragment extends Fragment {
         intent.putExtra("user", mainUser);
         intent.putExtra("chat", chatItemArrayList.get(position));
         startActivity(intent);
-    }
-
-    // Подвязать проверку из бд
-    private boolean isChatListEmpty() {
-        return false;
     }
 }

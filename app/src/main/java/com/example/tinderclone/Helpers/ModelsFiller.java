@@ -1,5 +1,6 @@
 package com.example.tinderclone.Helpers;
 
+import com.example.tinderclone.Chat.ChatItem;
 import com.example.tinderclone.Users.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,5 +33,20 @@ public class ModelsFiller {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public static ChatItem chatItemFillerId(JSONObject jsonObject) throws JSONException {
+        ChatItem item = new ChatItem();
+        item.setId(jsonObject.getLong("id"));
+        item.setFirstUserId(jsonObject.getLong("participant_1"));
+        item.setSecondUserId(jsonObject.getLong("participant_2"));
+        return item;
+    }
+
+    public static ChatItem chatItemFillerOtherFields(ChatItem chatItem, User user, JSONObject jsonObject) throws JSONException {
+        ChatItem item = chatItem;
+        chatItem.setChatName(user.getName());
+        chatItem.setImage(user.getMainPhoto());
+        return item;
     }
 }
