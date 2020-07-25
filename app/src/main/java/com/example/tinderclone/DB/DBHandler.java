@@ -177,6 +177,19 @@ public class DBHandler {
         };
         RequestHandler.getInstance(context).addToRequestQueue(stringRequest);
     }
+    public static void getChats(Context context, long userId, VolleyCallback callback) {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, Constants.URL_GET_CHATS, callback::onSuccess, callback::onError
+        ) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("user_id", String.valueOf(userId));
+
+                return params;
+            }
+        };
+        RequestHandler.getInstance(context).addToRequestQueue(stringRequest);
+    }
 
     // Recommendations
     public static void getWhoLikesMe(Context context, long userId, VolleyCallback callback) {

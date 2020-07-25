@@ -12,6 +12,9 @@ public class ChatItem implements Parcelable {
     private String sender;
     private String senderImage;
 
+    private long firstUserId;
+    private long secondUserId;
+
     public ChatItem() { }
 
     //Конструктор для формирования списка переписок
@@ -95,6 +98,22 @@ public class ChatItem implements Parcelable {
     }
     public void setReceiverId(long receiverId) {
         this.receiverId = receiverId;
+    }
+
+    public long getFirstUserId() {
+        return firstUserId;
+    }
+
+    public void setFirstUserId(long firstUserId) {
+        this.firstUserId = firstUserId;
+    }
+
+    public long getSecondUserId() {
+        return secondUserId;
+    }
+
+    public void setSecondUserId(long secondUserId) {
+        this.secondUserId = secondUserId;
     }
 
     @Override
